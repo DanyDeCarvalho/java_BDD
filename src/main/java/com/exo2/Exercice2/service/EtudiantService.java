@@ -5,7 +5,13 @@ import com.exo2.Exercice2.entity.Etudiant;
 import com.exo2.Exercice2.mapper.EtudiantMapper;
 import com.exo2.Exercice2.repository.EtudiantRepository;
 import lombok.AllArgsConstructor;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,8 +24,9 @@ public class EtudiantService {
     private final EtudiantRepository etudiantRepository;
     private final EtudiantMapper etudiantMapper;
 
-    public List<EtudiantDto> findAll() {
-        return etudiantMapper.toDtos(etudiantRepository.findAll());
+    @Cacheable("etudiants")
+    public Page<EtudiantDto> findAll(Pageable pageable) {
+        return etudiantRepository.findAll(pageable).map(etudiantMapper::toDto);
     }
 
     public EtudiantDto findById(Long id) {
@@ -30,6 +37,7 @@ public class EtudiantService {
         return etudiantMapper.toDto(etudiantRepository.findOneEtudiantByNomAndPrenom(nom, prenom).orElse(null));
     }
 
+    @CachePut(value = "etudiants", key = "#etudiantDto.id")
     public EtudiantDto save(EtudiantDto etudiantDto) {
         return etudiantMapper.toDto(etudiantRepository.save(etudiantMapper.toEntity(etudiantDto)));
     }
@@ -50,6 +58,7 @@ public class EtudiantService {
                 .orElse(null);
     }
 
+    @CacheEvict(value = "etudiants", allEntries = true)
     public void delete(Long id) {
         etudiantRepository.deleteById(id);
     }

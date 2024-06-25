@@ -4,8 +4,12 @@ import com.exo2.Exercice2.dto.EtudiantDto;
 import com.exo2.Exercice2.dto.ProjetDto;
 import com.exo2.Exercice2.service.ProjetService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 
 import java.util.List;
 
@@ -16,8 +20,9 @@ public class ProjetController {
     private ProjetService projetService;
 
     @GetMapping
-    public ResponseEntity<List<ProjetDto>> findAll() {
-        return ResponseEntity.ok(projetService.findAll());
+    public ResponseEntity<Page<ProjetDto>> findAll(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(projetService.findAll(PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}")

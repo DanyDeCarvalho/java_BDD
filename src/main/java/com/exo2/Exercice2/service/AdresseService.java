@@ -6,6 +6,10 @@ import com.exo2.Exercice2.mapper.AdresseMapper;
 import com.exo2.Exercice2.repository.AdresseRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -15,10 +19,11 @@ public class AdresseService {
     private AdresseRepository adresseRepository;
     private AdresseMapper adresseMapper;
 
-    public List<AdresseDto> findAll()
-    {
-        return adresseMapper.toDtos(adresseRepository.findAll());
+    @Cacheable("adresses")
+    public Page<AdresseDto> findAll(Pageable pageable) {
+        return adresseRepository.findAll(pageable).map(adresseMapper::toDto);
     }
+
 
     public AdresseDto findById(Long id)
     {
